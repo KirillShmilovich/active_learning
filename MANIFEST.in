@@ -1,0 +1,6 @@
+include LICENSE
+include MANIFEST.in
+include versioneer.py
+
+graft active_learning
+global-exclude *.py[cod] __pycache__ *.so
