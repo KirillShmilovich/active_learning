@@ -13,7 +13,7 @@ from sklearn.gaussian_process.kernels import RBF
 
 class Bayesian_Optimizer:
     def __init__(
-        self, estimator="GP", kernel="RBF", param_optimizer="CV", sampling="KB"
+        self, estimator="GP", kernel="RBF", param_optimizer="CV", sampling="EM"
     ):
 
         if param_optimizer == "EM":
@@ -30,7 +30,7 @@ class Bayesian_Optimizer:
 
         if estimator == "GP":
             self.estimator = GaussianProcessRegressor(
-                kernel=self.kernel, optimizer=self.param_optimizer
+                kernel=self.kernel, optimizer=self.param_optimizer, normalize_y=True
             )
         else:
             raise NotImplementedError
