@@ -1,17 +1,19 @@
 from copy import deepcopy
-from active_learning.acquisition import UCB
+from active_learning.acquisition import EI
 import numpy as np
 
 
-def kriging_beliver(estimator, X_pool, q, acquisition=UCB, **kwargs):
+def kriging_beliver(estimator, X_pool, q, acquisition=EI, **kwargs):
     est = deepcopy(estimator)
     est.optimizer = "fmin_l_bfgs_b"
+    est.n_restarts_optimizer = 10
     query = np.zeros(shape=(q, X_pool.shape[1]))
     idxs = np.zeros(shape=q, dtype=np.int)
     for i in range(q):
         mu, std = est.predict(X_pool, return_std=True)
-        ac = acquisition(mu=mu, std=std, **kwargs)
-        ac_idx = ac.argsort()
+        fMax = est.y_train_.max()
+        ac = acquisition(mu=mu, std=std, fMax=fMax, **kwargs)
+        ac_idx = ac.argsort()[::-1]
 
         if i == 0:
             mask = np.ones(shape=(X_pool.shape[0]), dtype=np.bool)

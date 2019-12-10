@@ -7,19 +7,22 @@ Handles the primary functions
 from active_learning.param_optimizer import cross_validation
 from active_learning.sampling import kriging_beliver
 
+import numpy as np
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF
 
 
-class Bayesian_Optimizer:
+class BayesianOptimizer:
     def __init__(
-        self, estimator="GP", kernel="RBF", param_optimizer="CV", sampling="EM"
+        self, estimator="GP", kernel="RBF", param_optimizer="EM", sampling="KB"
     ):
 
         if param_optimizer == "EM":
             self.param_optimizer = "fmin_l_bfgs_b"
+            self.n_restarts = 10
         elif param_optimizer == "CV":
             self.param_optimizer = cross_validation
+            self.n_restarts = 0
         else:
             raise NotImplementedError
 
@@ -30,12 +33,15 @@ class Bayesian_Optimizer:
 
         if estimator == "GP":
             self.estimator = GaussianProcessRegressor(
-                kernel=self.kernel, optimizer=self.param_optimizer, normalize_y=True
+                kernel=self.kernel,
+                optimizer=self.param_optimizer,
+                normalize_y=True,
+                n_restarts_optimizer=self.n_restarts,
             )
         else:
             raise NotImplementedError
 
-        if sampling == "CV":
+        if sampling == "KB":
             self.sampling = kriging_beliver
         else:
             raise NotImplementedError
@@ -50,12 +56,34 @@ class Bayesian_Optimizer:
         else:
             self.std = None
 
-        self.estimator.fit(X, mu)
+        self.estimator.fit(self.X, self.mu)
 
-    def query(self, X_pool, q):
+    def query(self, X_pool, q, **kwargs):
         self.X_pool = X_pool
         self.q = q
-        self.samples = self.sampling(self.estimator, self.X_pool, self.q)
+        self.sample_points, self.sample_idxs = self.sampling(
+            self.estimator, self.X_pool, self.q, **kwargs
+        )
+        return self.sample_points
+
+    def teach(self, X_new, mu_new, std_new=None):
+        self.X_new = X_new
+        self.mu_new = mu_new
+        self.std_new = std_new
+
+        self.X = np.concatenate((self.X, self.X_new))
+        self.mu = np.concatenate((self.mu, self.mu_new))
+
+        if self.std_new is not None:
+            self.std = np.concatenate((self.std, self.std_new))
+            self.estimator.alpha = self.std
+        else:
+            self.std = None
+
+        self.estimator.fit(self.X, self.mu)
+
+    def predict(self, x, return_std=True, return_cov=False):
+        return self.estimator.predict(x, return_std, return_cov)
 
 
 if __name__ == "__main__":
