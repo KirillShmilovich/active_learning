@@ -9,12 +9,11 @@ from active_learning.sampling import kriging_beliver
 
 import numpy as np
 from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.gaussian_process.kernels import RBF
 
 
 class BayesianOptimizer:
     def __init__(
-        self, estimator="GP", kernel="RBF", param_optimizer="EM", sampling="KB"
+        self, estimator="GP", kernel=None, param_optimizer="EM", sampling="KB"
     ):
 
         if param_optimizer == "EM":
@@ -26,10 +25,7 @@ class BayesianOptimizer:
         else:
             raise NotImplementedError
 
-        if kernel == "RBF":
-            self.kernel = RBF()
-        else:
-            raise NotImplementedError
+        self.kernel = kernel  # if None, vanilla C * RBF
 
         if estimator == "GP":
             self.estimator = GaussianProcessRegressor(
