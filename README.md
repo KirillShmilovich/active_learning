@@ -6,7 +6,7 @@ active_learning
 
 Small package for doing (batched) Bayesian optimization. 
 
-An example usage can be found in `BatchedBO.ipynb'
+An example usage can be found in [BatchedBO.ipynb](https://github.com/KirillShmilovich/active_learning/blob/master/BatchedBO.ipynb)
 
 ### Copyright
 
