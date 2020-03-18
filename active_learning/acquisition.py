@@ -48,7 +48,7 @@ def EI(mu, std, **kwargs):
     arXiv:1012.2599, http://arxiv.org/abs/1012.2599.
     """
     fMax = kwargs["fMax"]
-    epsilon = kwargs["epsilon"] if "epsilon" in kwargs else 0.1
+    epsilon = kwargs["epsilon"] if "epsilon" in kwargs else 0.01
 
     Z = (mu - fMax - epsilon) / std
 
